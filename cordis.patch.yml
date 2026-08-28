@@ -1,0 +1,6 @@
+# Install the host half into the DSH Cordis composition.
+- insert:
+    - id: dsh-plugin-template
+      name: 'dsh-plugin-template'
+      config:
+        prefix: Hello
