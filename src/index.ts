@@ -10,7 +10,15 @@ export interface Config { readonly prefix?: string }
 export const Config: z<Config> = z.object({ prefix: z.string().default('Hello') })
 
 export function apply(ctx: Context, config: Config): void {
-  const prefix = config.prefix ?? 'Hello'
+  let source = () => config
+
+  // Attach optional user settings layer for DSH 0.1.2-alpha.2 settings service
+  ctx.inject(['settings'], (settingsCtx) => {
+    settingsCtx.settings?.installSection(ctx, name, Config, config, {
+      setSource: (current) => { source = current },
+    })
+  })
+
   ctx.tools.register(defineTool({
     name: 'template_greet',
     description: 'Return a greeting using this plugin configuration.',
@@ -19,7 +27,6 @@ export function apply(ctx: Context, config: Config): void {
       schema: { type: 'object', properties: { greeting: { type: 'string' } }, additionalProperties: false },
       render: (_args, value) => [{ type: 'text', text: (value as { greeting: string }).greeting }],
     },
-    execute: async ({ name }: { name: string }) => ({ greeting: prefix + ', ' + name + '!' }),
+    execute: async ({ name }: { name: string }) => ({ greeting: (source().prefix ?? 'Hello') + ', ' + name + '!' }),
   }))
-
 }
