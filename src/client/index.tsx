@@ -1,6 +1,7 @@
 /** Browser half discovered through package.json dsh.client and exports["./client"]. */
 import type { Context } from '@deepseek-ai/cordis'
 import React from 'react'
+import css from './index.module.css'
 
 const NS = 'dsh-plugin-template'
 const dictionaries = {
@@ -14,7 +15,12 @@ type ClientContext = Context & {
 }
 
 function SettingsPanel({ t }: { readonly t: (key: 'title' | 'description') => string }): React.JSX.Element {
-  return <section><h3>{t('title')}</h3><p>{t('description')}</p></section>
+  return (
+    <section className={css.panel}>
+      <h3 className={css.title}>{t('title')}</h3>
+      <p className={css.description}>{t('description')}</p>
+    </section>
+  )
 }
 
 export const inject = ['slots', 'locale']

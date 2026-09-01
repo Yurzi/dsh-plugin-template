@@ -1,5 +1,3 @@
-declare module '*.module.css' { const classes: Readonly<Record<string, string>>; export default classes }
-
 declare module '@deepseek-ai/cordis' {
   interface Context {
     settings?: {
@@ -8,7 +6,7 @@ declare module '@deepseek-ai/cordis' {
         ns: string,
         schema: unknown,
         entry: T,
-        hooks: { setSource: (source: () => T) => void; onChange?: () => void; validate?: (value: T) => void },
+        hooks: { setSource: (source: () => T) => void; onChange: () => void; validate?: (value: T) => void },
       ): void
     }
   }
@@ -19,4 +17,5 @@ declare global {
     __ModuleLoader__: { load(entry: { id: string; factory: (require: (id: string) => unknown) => unknown }): void }
   }
 }
+
 export {}

@@ -1,0 +1,15 @@
+.panel {
+  padding: 8px 0;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--dsh-color-muted, #666);
+}

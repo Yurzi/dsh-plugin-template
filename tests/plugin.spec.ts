@@ -29,6 +29,8 @@ describe('host plugin contract', () => {
     const settingsService = {
       installSection: vi.fn((_owner, ns, _schema, _entry, hooks) => {
         expect(ns).toBe('dsh-plugin-template')
+        expect(typeof hooks.onChange).toBe('function')
+        hooks.onChange()
         sourceSink = hooks.setSource
       }),
     }

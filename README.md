@@ -1,6 +1,6 @@
 # dsh-plugin-template
 
-A production-oriented template for third-party [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugins. It mirrors current internal plugin contracts (DSH `0.1.2-alpha.2` baseline) while remaining installable outside the DSH monorepo.
+A production-oriented template for third-party [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugins. It mirrors current internal plugin contracts (DSH `0.1.2-alpha.3` baseline) while remaining installable outside the DSH monorepo.
 
 ## Included
 
@@ -28,7 +28,7 @@ Do not edit DeepSeek Harness source for ordinary third-party installation. See [
 
 1. Required Cordis services belong in `inject`; conditional capabilities use `ctx.inject`.
 2. Register resources through `ctx` and return or attach lifecycle disposers.
-3. Attach user-configurable settings through `ctx.settings.installSection` so the Web settings tab displays the card.
+3. Attach user-configurable settings through `ctx.settings.installSection` (supplying mandatory `onChange`) so the Web settings tab displays the card.
 4. Client dependencies must be DSH browser module-table entries or bundled; never use Node APIs in `src/client`.
 5. Every object in a model-facing JSON schema sets `additionalProperties: false`.
 6. Mark custom third-party session events with `ignorable: true` so unequipped readers reconstruct without error.

@@ -1,6 +1,6 @@
 # Existing Template Comparison
 
-Audited against DeepSeek Harness `3f1b46a5db011ca1d167f2231c9444dd1d51a66a` (release `0.1.2-alpha.2`).
+Audited against DeepSeek Harness `dd6322d604e00eec1ba5e0c8541159906a21094a` (release `0.1.2-alpha.3`).
 
 | Area | bugmaker2 | kun2-5code | sunshine-lang | This template |
 | --- | --- | --- | --- | --- |
@@ -10,7 +10,7 @@ Audited against DeepSeek Harness `3f1b46a5db011ca1d167f2231c9444dd1d51a66a` (rel
 | Tests | Vitest contracts/runtime | One build smoke | Unwired integration file | Vitest + build + tarball gate |
 | Publish gate | check, no packed consumer | prepare only | none | prepublish check and pack extraction |
 | Scaffolding | Manual rename checklist | Fork/edit | Script with weak exclusions | Validated name, excludes VCS/build state |
-| DSH baseline | old rc.6, wildcard peers | rc.5/rc.6, obsolete settings docs | rc.1 tools | 0.1.2-alpha.2 baseline |
+| DSH baseline | old rc.6, wildcard peers | rc.5/rc.6, obsolete settings docs | rc.1 tools | 0.1.2-alpha.3 baseline |
 
 ## Assessment
 
