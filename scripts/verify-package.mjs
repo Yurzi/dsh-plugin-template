@@ -27,6 +27,7 @@ try {
     assert.ok(readFileSync(join(dir, 'package', path)).length > 0, 'missing packed artifact: ' + path)
   }
   assert.equal(pkg.dsh.bundle.patch, './cordis.patch.yml')
+  assert.match(pkg.engines?.dsh ?? '', /^>=0.1.2-rc./, 'engines.dsh must enforce >=0.1.2-rc baseline')
   console.log('packed plugin contract verified:', tarball)
 } finally {
   rmSync(dir, { recursive: true, force: true })

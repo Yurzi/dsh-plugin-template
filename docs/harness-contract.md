@@ -2,7 +2,9 @@
 
 ## Source of truth
 
-Extracted from DeepSeek Harness commit `dd6322d604e00eec1ba5e0c8541159906a21094a` and source package line `0.1.2-alpha.3` (Vendor line 4.0.2: Cordis 4.0.2, Schemastery 3.18.2, Cosmokit 1.8.3).
+Extracted from DeepSeek Harness commit `a66e4702047846cdaa10c66c9d3df3951f5ea70d` (release `0.1.2-rc.1`) / master HEAD `76fda729799fe9b3848dbe2c211d4b231032b81e` and source package line `0.1.2-rc.1` (Vendor line 4.0.2: Cordis 4.0.2, Schemastery 3.18.2, Cosmokit 1.8.3).
+
+> **Version Support Policy**: This template exclusively supports DeepSeek Harness **RC (Release Candidate) and stable releases** (`engines.dsh >= 0.1.2-rc.1`). It intentionally does not provide maintenance for volatile, fast-moving Alpha iterations.
 
 Representative sources:
 
@@ -29,12 +31,13 @@ Key architectural boundaries:
 2. **Settings Integration**:
    - Host attaches user settings through `ctx.inject(['settings'], (settingsCtx) => { settingsCtx.settings.installSection(ctx, name, Config, config, { setSource, onChange, validate? }) })`. Note that `onChange` is mandatory.
    - Client card registers into the keyed slot `settings.plugin.item` matching the settings namespace. The DSH Web UI renders cards at the intersection of host-served namespaces and client registrations.
-3. **Client UI & CSS Modules**:
+3. **Client UI & Design Tokens**:
    - Client bundles resolve platform modules (`react`, `react-dom`, `react-dom/client`, `@deepseek-ai/cordis`, `@deepseek-ai/dsh-client-store`, `@deepseek-ai/dsh-client-ui-slots`, `@deepseek-ai/dsh-client-ui-primitives`) as externals provided by the host runtime module loader.
+   - UI styling adopts 0.1.2-rc.1 design tokens: 0.5px hairline strokes (`--dsw-alias-border-l4`), 16px superellipse rounded card containers, and standard theme color tokens (`--dsw-alias-bg-layer-3`, `--dsw-alias-label-primary`, `--dsw-alias-label-tertiary`).
    - `*.module.css` stylesheets are compiled at build time via `lightningcss` with scoped class maps and injected as `<style data-plugin="...">` tags upon client bundle execution.
 4. **Session Projections & Durability**:
-   - Session state is driven by `ctx.sessionProjections`. Under the 0.1.2-alpha.3 identity gate, projection `wire.view` must reuse object/array references across internal-only state changes to suppress redundant wire pushes.
-   - Authoritative session persistence is solely JSONL (`@deepseek-ai/dsh-session-persistence-jsonl`).
+   - Session state is driven by `ctx.sessionProjections`. Under the identity gate, projection `wire.view` must reuse object/array references across internal-only state changes to suppress redundant wire pushes.
+   - Authoritative session persistence is solely handle-based JSONL (`@deepseek-ai/dsh-session-persistence-jsonl`), strictly separating logical event sequences (`seq`) from physical log byte offsets.
    - Custom informational events appended to sessions should specify `ignorable: true` so unequipped readers or CLI viewers reconstruct without errors.
 5. **Remote RPC**:
    - High-level RPC methods use `ctx.remote` with standardized `RemoteError` code mapping (`<domain>/<reason>`).

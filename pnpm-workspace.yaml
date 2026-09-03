@@ -2,3 +2,11 @@ packages: []
 
 allowBuilds:
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@deepseek-ai/dsh-brand@0.1.2-rc.1'
+  - '@deepseek-ai/dsh-client-locale@0.1.2-rc.1'
+  - '@deepseek-ai/dsh-client-ui-settings-plugins@0.1.2-rc.1'
+  - '@deepseek-ai/dsh-settings@0.1.2-rc.1'
+  - '@deepseek-ai/dsh-tools@0.1.2-rc.1'
+  - '@deepseek-ai/dsh-util-values@0.1.2-rc.1'

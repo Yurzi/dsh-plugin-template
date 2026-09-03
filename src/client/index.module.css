@@ -1,15 +1,29 @@
-.panel {
-  padding: 8px 0;
+.card {
+  list-style: none;
+  border: 0.5px solid var(--dsw-alias-border-l4, rgba(0, 0, 0, 0.08));
+  border-radius: 16px;
+  background: var(--dsw-alias-bg-layer-3, rgba(255, 255, 255, 0.5));
+  transition: border-color 0.16s, background 0.16s;
+  padding: 16px 20px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .title {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 14px;
   font-weight: 600;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary, inherit);
 }
 
 .description {
   margin: 0;
   font-size: 13px;
-  color: var(--dsh-color-muted, #666);
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary, var(--dsh-color-muted, #666));
 }

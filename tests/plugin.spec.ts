@@ -60,3 +60,32 @@ describe('host plugin contract', () => {
     expect(await tool.execute({ name: 'World' }, {})).toEqual({ greeting: 'Greetings, World!' })
   })
 })
+
+describe('client plugin contract', () => {
+  it('exports client inject and installs slots & locale', async () => {
+    const { apply: clientApply, inject: clientInject } = await import('../src/client/index.tsx')
+    expect(clientInject).toEqual(['slots', 'locale'])
+
+    let registeredSlot: any
+    const ctx = {
+      effect: vi.fn((fn: () => unknown) => fn()),
+      locale: {
+        register: vi.fn(),
+        bind: vi.fn(() => vi.fn((key: string) => key)),
+      },
+      slots: {
+        inject: vi.fn((_name: string, callback: () => unknown) => callback()),
+        register: vi.fn((opts: unknown, comp: unknown) => {
+          registeredSlot = { opts, comp }
+          return vi.fn()
+        }),
+      },
+    }
+
+    clientApply(ctx as never)
+    expect(ctx.locale.register).toHaveBeenCalledWith('dsh-plugin-template', expect.any(Object))
+    expect(ctx.slots.inject).toHaveBeenCalledWith('settings.plugin.item', expect.any(Function))
+    expect(registeredSlot.opts.name).toBe('settings.plugin.item')
+    expect(registeredSlot.opts.key).toBe('dsh-plugin-template')
+  })
+})

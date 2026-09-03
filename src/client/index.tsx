@@ -16,10 +16,12 @@ type ClientContext = Context & {
 
 function SettingsPanel({ t }: { readonly t: (key: 'title' | 'description') => string }): React.JSX.Element {
   return (
-    <section className={css.panel}>
-      <h3 className={css.title}>{t('title')}</h3>
-      <p className={css.description}>{t('description')}</p>
-    </section>
+    <li className={css.card}>
+      <div className={css.header}>
+        <h3 className={css.title}>{t('title')}</h3>
+        <p className={css.description}>{t('description')}</p>
+      </div>
+    </li>
   )
 }
 
