@@ -19,7 +19,7 @@ function runPack() {
 
 const tarball = runPack()
 assert.ok(tarball, 'package pack did not report a tarball')
-const dir = mkdtempSync(join(tmpdir(), 'dsh-plugin-template-'))
+const dir = mkdtempSync(join(tmpdir(), 'dsh-plugin-verify-'))
 try {
   execFileSync('tar', ['-xzf', tarball, '-C', dir])
   const pkg = JSON.parse(readFileSync(join(dir, 'package/package.json'), 'utf8'))
@@ -27,7 +27,7 @@ try {
     assert.ok(readFileSync(join(dir, 'package', path)).length > 0, 'missing packed artifact: ' + path)
   }
   assert.equal(pkg.dsh.bundle.patch, './cordis.patch.yml')
-  assert.match(pkg.engines?.dsh ?? '', /^>=0.1.2-rc./, 'engines.dsh must enforce >=0.1.2-rc baseline')
+  assert.match(pkg.engines?.dsh ?? '', /^>=0.1.5-rc./, 'engines.dsh must enforce >=0.1.5-rc baseline')
   console.log('packed plugin contract verified:', tarball)
 } finally {
   rmSync(dir, { recursive: true, force: true })

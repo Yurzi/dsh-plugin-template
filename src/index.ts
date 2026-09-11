@@ -12,7 +12,7 @@ export const Config: z<Config> = z.object({ prefix: z.string().default('Hello') 
 export function apply(ctx: Context, config: Config): void {
   let source = () => config
 
-  // Attach optional user settings layer for DSH 0.1.2-rc.1 settings service
+  // Attach optional user settings layer for DSH 0.1.5-rc.2 settings service
   ctx.inject(['settings'], (settingsCtx) => {
     settingsCtx.settings?.installSection(ctx, name, Config, config, {
       setSource: (current) => { source = current },
