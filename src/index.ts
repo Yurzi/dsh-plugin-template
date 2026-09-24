@@ -6,20 +6,11 @@ import { defineTool } from '@deepseek-ai/dsh-tools'
 export const name = 'dsh-plugin-template'
 export const inject = ['tools']
 
-export interface Config { readonly prefix?: string }
-export const Config: z<Config> = z.object({ prefix: z.string().default('Hello') })
+export const Config = z.object({ prefix: z.string().default('Hello').volatile() })
+export type Config = ReturnType<typeof Config>
 
 export function apply(ctx: Context, config: Config): void {
-  let source = () => config
-
-  // Attach optional user settings layer for DSH 0.1.5-rc.2 settings service
-  ctx.inject(['settings'], (settingsCtx) => {
-    settingsCtx.settings?.installSection(ctx, name, Config, config, {
-      setSource: (current) => { source = current },
-      onChange: () => {},
-    })
-  })
-
+  // Cordis owns the live config. Read volatile values at execution time.
   ctx.tools.register(defineTool({
     name: 'template_greet',
     description: 'Return a greeting using this plugin configuration.',
@@ -28,6 +19,6 @@ export function apply(ctx: Context, config: Config): void {
       schema: { type: 'object', properties: { greeting: { type: 'string' } }, additionalProperties: false },
       render: (_args, value) => [{ type: 'text', text: (value as { greeting: string }).greeting }],
     },
-    execute: async ({ name }: { name: string }) => ({ greeting: (source().prefix ?? 'Hello') + ', ' + name + '!' }),
+    execute: async ({ name }: { name: string }) => ({ greeting: config.prefix.get() + ', ' + name + '!' }),
   }))
 }

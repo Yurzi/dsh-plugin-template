@@ -1,34 +1,45 @@
 /** Browser half discovered through package.json dsh.client and exports["./client"]. */
 import type { Context } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-ui-plugin-manager/client'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import React from 'react'
 import css from './index.module.css'
 
 const NS = 'dsh-plugin-template'
 const dictionaries = {
-  en: { title: 'Template plugin', description: 'Example third-party DSH plugin surface.' },
-  zh: { title: '模板插件', description: '第三方 DSH 插件界面示例。' },
+  en: { title: 'Template plugin', description: 'Edit the greeting prefix in the plugin row configuration below.' },
+  zh: { title: '模板插件', description: '请在下方插件条目的配置中编辑问候语前缀。' },
 }
 
-type ClientContext = Context & {
-  locale: { register(ns: string, dictionaries: Record<string, Record<string, string>>): () => void; bind(ns: string): (key: 'title' | 'description') => string }
-  slots: { inject(name: string, factory: () => unknown): void; register(options: Record<string, unknown>, component: unknown): () => void }
+declare module '@deepseek-ai/dsh-client-ui-slots' {
+  interface LocaleNamespaceMap {
+    'dsh-plugin-template': keyof typeof dictionaries.en
+  }
 }
 
-function SettingsPanel({ t }: { readonly t: (key: 'title' | 'description') => string }): React.JSX.Element {
+type SettingsPanelProps = PropsRuntime<'plugins.bundle.config'> & PropsLocale<typeof NS>
+
+function SettingsPanel({ t, view }: SettingsPanelProps): React.JSX.Element {
+  if (view === 'summary') return <>{t('description')}</>
   return (
-    <li className={css.card}>
+    <section className={css.card}>
       <div className={css.header}>
         <h3 className={css.title}>{t('title')}</h3>
         <p className={css.description}>{t('description')}</p>
       </div>
-    </li>
+    </section>
   )
 }
 
 export const inject = ['slots', 'locale']
 
-export function apply(ctx: ClientContext): void {
+export function apply(ctx: Context): void {
   ctx.effect(() => ctx.locale.register(NS, dictionaries), NS + ': dictionaries')
-  const t = ctx.locale.bind(NS)
-  ctx.slots.inject('settings.plugin.item', () => ctx.slots.register({ name: 'settings.plugin.item', key: NS, locale: NS, inject: () => ({ t }) }, SettingsPanel))
+  // Third-party bundles own a keyed configuration surface, not plugins.item.
+  // Leave row configuration to the Host's generated volatile-field editor.
+  ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register({
+    name: 'plugins.bundle.config', key: NS, locale: NS,
+  }, SettingsPanel))
 }

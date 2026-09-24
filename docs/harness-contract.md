@@ -2,61 +2,53 @@
 
 ## Source of truth
 
-Extracted from DeepSeek Harness commit `fb2c4b9e698e30edb738bca4cf0618587db7d203` (release `0.1.5-rc.2`) and source package line `0.1.5-rc.2` (Vendor line 4.0.2: Cordis 4.0.2, Schemastery 3.18.2, Cosmokit 1.8.3).
+Verified against DeepSeek Harness tag **dsh-v0.1.7-rc.1**, commit `46a7f68b0922371ce7144b668b90e377d8e799f4`. Vendor versions: Cordis 4.0.4 and Schemastery 3.18.4. Development dependencies are pinned to this release; no compatibility claim is made for earlier settings APIs.
 
-> **Version Support Policy**: This template exclusively supports DeepSeek Harness **RC (Release Candidate) and stable releases** (`engines.dsh >= 0.1.5-rc.2`). It intentionally does not provide maintenance for volatile, fast-moving Alpha iterations.
+Representative upstream sources (relative to the upstream checkout):
 
-Representative sources:
+- `packages/boot/app-boot/src/plugin-compatibility.ts`: startup/install peer compatibility evaluation.
+- `vendor/schemastery/src/index.ts`, `vendor/cosmokit/src/volatile.ts`: schema wrapping and live references.
+- `packages/settings/settings/src/index.ts`: active profile configuration descriptors and volatile-field projection.
+- `packages/web/web-search-deepseek/src/index.ts`: reading volatile values per invocation.
+- `packages/core/tools/src/schema.ts`: tool definitions.
+- `packages/client/web/src/platform.ts`, `packages/client/tsdown.client.ts`: browser module table and loader bundle contract.
+- `packages/client/ui-plugin-manager/src/client/slot-contract.ts`: third-party configuration surfaces.
+- `packages/client/ui-settings/src/client/config-form.ts`: configForms service.
+- `packages/client/ui-slots/src/index.ts`, `packages/client/locale/src/client/index.ts`: typed props, locale binding and lifecycle.
 
-- `packages/fs/tool-fs/src/index.ts`: named Cordis exports, Schemastery config, required and conditional injection.
-- `packages/core/tools/src/schema.ts`: tool definitions and execution contracts.
-- `packages/client/tsdown.client.ts`: ModuleLoader output, external purity, CSS Modules with `lightningcss`, and build faces.
-- `packages/client/web/src/platform.ts`: shared browser platform module roster (`PLATFORM_MODULES`, including dockkit).
-- `packages/client/ui-settings-plugins/package.json`: `dsh.client`, exports, peers, and files.
-- `packages/client/ui-settings-plugins/src/client/index.ts`: browser surface ownership and `settings.plugin.item` slot dispatch.
-- `packages/settings/settings/src/index.ts`: settings provider, `installSection` lifecycle with mandatory `onChange`, and namespace verification.
-- `packages/session/session-projection/src/index.ts`: mandatory session projection seam, identity-gated change feed, and `ignorable` event markers.
-- `packages/session/session-turn-outline/src/index.ts`: whole-log turn outline projection.
-- `packages/typert/protocol/src/index.ts`: unified `RemoteError` failure vocabulary.
+## Portable contract
 
-## Portable contract retained here
+One package exposes the Node host half and optional browser half. `dsh.bundle.patch` publishes composition defaults; `dsh.client.inject` declares browser plugin providers. Client output calls `window.__ModuleLoader__.load` and resolves shared identity through injected `require`. TypeScript uses strict NodeNext semantics, relative runtime imports end in `.js`, and declarations live under `lib/types`.
 
-One package exposes a Node host half and optional browser half. `dsh.bundle.patch` publishes composition defaults; `dsh.client` declares browser dependencies. Client output calls `window.__ModuleLoader__.load` and resolves shared identity through injected `require`. TypeScript uses strict NodeNext semantics, relative runtime imports end in `.js`, declarations live under `lib/types`, and published files are explicit.
+### Live configuration
 
-Key architectural boundaries:
+Host plugins export `name`, `inject`, `Config`, and `apply`. The loader validates the schema before calling apply. A defaulted field marked `.volatile()` becomes a live reference, not a string. Read `config.prefix.get()` at execution time; tests that call apply directly must pass parsed Config or a matching reference.
 
-1. **Host & Tool Registration**:
-   - Host plugins export `name`, `inject`, `Config`, and `apply`.
-   - Explicit Agent passing: dynamic `ctx.agent` is completely removed in 0.1.5 (`AgentRegistry` no longer registers `ctx.accessor('agent')`); setup uses `(agentCtx, agent)` or explicit service passing, and current initiator uses `ctx.agents.currentInitiator()`.
-   - Tool schemas use `defineTool` with explicit `parameters`, `output` (`additionalProperties: false`), and text renderers. Tool execution context receives `{ agent, signal, callId, deferContext, concludeTurn }`.
-2. **Settings Integration**:
-   - Host attaches user settings through `ctx.inject(['settings'], (settingsCtx) => { settingsCtx.settings.installSection(ctx, name, Config, config, { setSource, onChange, validate? }) })`. Note that `onChange` is mandatory.
-   - Client card registers into the keyed slot `settings.plugin.item` matching the settings namespace. The DSH Web UI renders cards at the intersection of host-served namespaces and client registrations.
-3. **Client UI & Design Tokens**:
-   - Client bundles resolve platform modules (`react`, `react/jsx-runtime`, `react-dom`, `react-dom/client`, `@deepseek-ai/cordis`, `@deepseek-ai/dsh-client-store`, `@deepseek-ai/dsh-client-ui-slots`, `@deepseek-ai/dsh-client-ui-primitives`, `@deepseek-ai/dsh-client-ui-dockkit`) as externals provided by the host runtime module loader.
-   - UI styling adopts 0.1.5-rc.2 design tokens: 0.5px hairline strokes (`--dsw-alias-border-l4`), 16px superellipse rounded card containers, and standard theme color tokens (`--dsw-alias-bg-layer-3`, `--dsw-alias-label-primary`, `--dsw-alias-label-tertiary`). Rightbar docking (`dockkit`) replaced legacy Details, turn-tail layout follows the 20/16/20px contract, and `FileTypeIcon` replaces legacy `DocumentFileIcon`.
-   - `*.module.css` stylesheets are compiled at build time via `lightningcss` with scoped class maps and injected as `<style data-plugin="...">` tags upon client bundle execution.
-4. **Session Projections & Durability**:
-   - Session state is driven by `ctx.sessionProjections`. Under the identity gate, projection `wire.view` must reuse object/array references across internal-only state changes to suppress redundant wire pushes.
-   - Authoritative session persistence is handle-based JSONL (`@deepseek-ai/dsh-session-persistence-jsonl`) with format version V3 (`SESSION_FORMAT_VERSION = 3`). `agentLoop.create(...)` is asynchronous with multi-process session locking (`SessionHandle`).
-   - Dynamic system prompts use in-history messaging (`systemPromptUpdate: 'in-history'`), preserving KV-cache across long sessions.
-   - Custom informational events appended to sessions should specify `ignorable: true` so unequipped readers or CLI viewers reconstruct without errors. Non-ignorable events (such as `deliverables/presented`) enforce strict schema validation across host boundaries.
-5. **Subprocess & Outbound Proxy**:
-   - Subprocess lifecycle management uses `.terminate()` or `AbortSignal`; `SubprocessHandle.pid` is removed on standard subprocesses.
-   - Outbound HTTP(S)/ALL proxy policy is installed before plugin boot (`@deepseek-ai/dsh-http-proxy`); standard host-plane `fetch` calls automatically honor environment and `$DSH_HOME/.env` proxy configuration.
-6. **Remote RPC**:
-   - High-level RPC methods use `ctx.remote` with standardized `RemoteError` code mapping (`<domain>/<reason>`). Scoped remote event contexts require explicit `agentId`.
+The settings service derives editable forms from active profile entries and their volatile schemas. No `installSection`, `setSource`, or old settings namespace registration is needed. Keep the schema default aligned with `cordis.patch.yml`. Values are persisted in profile configuration, not the removed global settings document.
+
+### Client UI
+
+Use type-only imports for actual Context/SlotMap declarations and `PropsRuntime` / `PropsLocale` for components. Declare the locale namespace in `LocaleNamespaceMap`; `locale: NS` provides the typed `t` automatically.
+
+This template registers a descriptive `plugins.bundle.config` panel keyed by npm package name. It does not register `plugins.row.config`, leaving the Host-generated prefix editor intact. Bundle panels receive `view: page` but no form. Row configuration panels use `<package>#<patch-row-id>` and receive optional `form`; summary views must return inline content rather than list/card wrappers.
+
+If custom editing is needed, use the row owner form, or inject `configForms` from `@deepseek-ai/dsh-client-ui-settings`. `get<T>(entryId)` uses a real profile entry id. `set`, `unset`, and `mutate` return `Promise<boolean>`; handle false, rejected writes, unavailable/loading state and revision conflicts. The static bundle panel does not implement custom editing.
+
+Shared platform externals remain React, React JSX runtime, react-dom, react-dom/client, Cordis, client-store, ui-slots, ui-primitives, and ui-dockkit. Other cross-plugin imports should be type-only unless the host explicitly provides their runtime module. CSS Modules are scoped and injected by the existing build adapter.
+
+### Dependency gate
+
+The Host checks `@deepseek-ai/dsh` and `@deepseek-ai/dsh-*` peers using semver with `includePrerelease: true`. An `engines.dsh` field alone does not establish that peer gate. The template explicitly declares its external host runtime import `@deepseek-ai/dsh-tools` as a peer. Its lower bound explicitly names rc.1; `>=0.1.7` would exclude rc.1 because it is earlier than the stable version.
 
 ## Deliberately not copied
 
-The internal monorepo uses `workspace:^`, project references, generated catalogs, build faces, Typert generators, oxlint, package-invariant gates, static-linked client channels, and root release orchestration. Those are repository infrastructure, not portable plugin API. Typert generation is especially monorepo-bound today, so this basic template demonstrates a narrow optional RPC adapter and standard settings integration instead of copying generated monorepo internals.
+The upstream monorepo uses workspace dependencies, generated catalogs, build faces, Typert generators, invariant gates and release orchestration. Those are repository infrastructure, not portable plugin APIs. `src/contract.ts` is only a browser-safe descriptor example; it is not an implemented RPC service.
 
 ## Upgrade checklist
 
-- Compare DSH package versions (`engines.dsh`) and Node/pnpm engines (`node ^22.19.0 || >=24.0.0`).
-- Inspect `packages/client/tsdown.client.ts` for loader, external, CSS, and build changes (including `PLATFORM_MODULES` additions such as `@deepseek-ai/dsh-client-ui-dockkit`).
-- Verify no code accesses dynamic `ctx.agent`; use `(agentCtx, agent)` or explicit service passing.
-- Inspect a current tool package for `defineTool` changes.
-- Inspect a current client package for slot, locale, and `dsh.client.inject` changes.
-- Verify settings namespace registration matches between host `installSection` and client `settings.plugin.item`, ensuring `onChange` hook is supplied.
-- Run `pnpm run check`, then verify the packed plugin in the current DSH GUI after refresh.
+- Check runtime peers, exact dev dependencies, vendor versions and the lockfile together.
+- Check loader output and platform module identity against upstream.
+- Verify Config reference semantics and schema-generated editing.
+- Check client slot owners, locale props and lifecycle disposal with real type imports.
+- Run `pnpm run check` and a frozen-lockfile install.
+- Install the packed plugin in the target profile; after refreshing Web, verify bundle information, row prefix editing and a fresh tool invocation.
