@@ -22,10 +22,19 @@ describe('host plugin contract', () => {
     const { tool, ctx } = register(Config({ prefix: 'Hi' }))
     expect(ctx.tools.register).toHaveBeenCalledOnce()
     expect(tool.name).toBe('template_greet')
+    expect(tool.parameters.required).toEqual(['name'])
     expect(tool.output.schema.additionalProperties).toBe(false)
+    expect(tool.output.schema.required).toEqual(['greeting'])
     const result = await tool.execute({ name: 'DSH' }, {})
     expect(result).toEqual({ greeting: 'Hi, DSH!' })
     expect(tool.output.render({ name: 'DSH' }, result)).toEqual([{ type: 'text', text: 'Hi, DSH!' }])
+  })
+
+  it('rejects missing and incorrectly typed arguments before execution', async () => {
+    const { tool } = register(Config({}))
+    await expect(tool.execute({}, {})).rejects.toThrow()
+    await expect(tool.execute({ name: 42 }, {})).rejects.toThrow()
+    await expect(tool.execute(null, {})).rejects.toThrow()
   })
 
   it('reads the current volatile snapshot for every execution', async () => {

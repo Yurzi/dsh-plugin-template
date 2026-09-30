@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-Verified against DeepSeek Harness tag **dsh-v0.1.7-rc.1**, commit `46a7f68b0922371ce7144b668b90e377d8e799f4`. Vendor versions: Cordis 4.0.4 and Schemastery 3.18.4. Development dependencies are pinned to this release; no compatibility claim is made for earlier settings APIs.
+Verified against DeepSeek Harness tag **dsh-v0.2.0-rc.2**, commit `639ed015397290b3745d163aafe02ffee4aa3f84`. Vendor versions: Cordis 4.0.4 and Schemastery 3.18.4. Development dependencies are pinned to this release; no compatibility claim is made for earlier settings APIs.
 
 Representative upstream sources (relative to the upstream checkout):
 
@@ -38,7 +38,15 @@ Shared platform externals remain React, React JSX runtime, react-dom, react-dom/
 
 ### Dependency gate
 
-The Host checks `@deepseek-ai/dsh` and `@deepseek-ai/dsh-*` peers using semver with `includePrerelease: true`. An `engines.dsh` field alone does not establish that peer gate. The template explicitly declares its external host runtime import `@deepseek-ai/dsh-tools` as a peer. Its lower bound explicitly names rc.1; `>=0.1.7` would exclude rc.1 because it is earlier than the stable version.
+The Host checks `@deepseek-ai/dsh` and `@deepseek-ai/dsh-*` peers using semver with `includePrerelease: true`. An `engines.dsh` field alone does not establish that peer gate. The template explicitly declares its external host runtime import `@deepseek-ai/dsh-tools` as a peer. All DSH peers and `engines.dsh` use `>=0.2.0-rc.2 <0.3.0-0`. The lower bound explicitly names the tested rc.2 release; `>=0.2.0` would exclude rc.2 because it is earlier than the stable version. The `-0` upper bound rejects even 0.3.0 prereleases under the Host gate. Range membership is not proof of compatibility with future releases.
+
+### Tool schemas
+
+`defineTool` compiles its implicit parameter root and validates input before calling `execute`. Explicit output/nested object schemas declare openness via `additionalProperties`; this template closes its output and marks `greeting` as `required: true`. This gives the renderer an inferred string without a type assertion. Do not add JSON Schema root `required: ["greeting"]` to the author DSL; requiredness is a per-property annotation.
+
+### rc.2 extension risks
+
+The APIs consumed here remain compatible from the previous template baseline. New timed questions can return a pending result and receive a later user reply; reminder framing now identifies scheduled content as a user message. Do not assume every question result has `answers` or use reminders to elevate untrusted external instructions. `OpenInAppAction` now takes `absolutePath` instead of session props. These APIs are not used by the example. See [the rc.2 upgrade notes](upgrade-0.2.0-rc.2.md) for source references and installation guidance.
 
 ## Deliberately not copied
 
